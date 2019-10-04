@@ -1,7 +1,7 @@
 // #include "ros/ros.h"
-#include <rclcpp/rclcpp.hpp>
+#include "rclcpp/rclcpp.hpp"
 // #include "std_msgs/String.h"
-#include <std_msgs/msg/string.hpp>
+#include "std_msgs/msg/string.hpp"
 
 #include <sstream>
 #include <fstream>
@@ -15,29 +15,30 @@
 #include <sys/mman.h>			// mlock
 #include <sched.h>				// sched
 
+
 #define EVAL_NUM 120		   // evaluation number for each data size
 #define PUBLISH_Hz 10
 #define QoS_Policy 3 // 1 means "reliable", 0 means "best effort", 3 means "history"
 
 static const rmw_qos_profile_t rmw_qos_profile_reliable = {
-  RMW_QOS_POLICY_KEEP_ALL_HISTORY,
+  RMW_QOS_POLICY_HISTORY_KEEP_ALL,
   100,
-  RMW_QOS_POLICY_RELIABLE,
-  RMW_QOS_POLICY_TRANSIENT_LOCAL_DURABILITY
+  RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+  RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
 };
 
 static const rmw_qos_profile_t rmw_qos_profile_best_effort = {
-  RMW_QOS_POLICY_KEEP_LAST_HISTORY,
+  RMW_QOS_POLICY_HISTORY_KEEP_LAST,
   1,
-  RMW_QOS_POLICY_BEST_EFFORT,
-  RMW_QOS_POLICY_VOLATILE_DURABILITY
+  RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+  RMW_QOS_POLICY_DURABILITY_VOLATILE
 };
 
 static const rmw_qos_profile_t rmw_qos_profile_history = {
-  RMW_QOS_POLICY_KEEP_LAST_HISTORY,
+  RMW_QOS_POLICY_HISTORY_KEEP_LAST,
   100,							// depth option for HISTORY
-  RMW_QOS_POLICY_RELIABLE,
-  RMW_QOS_POLICY_TRANSIENT_LOCAL_DURABILITY
+  RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+  RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
 };
 
 struct timespec tp1;
@@ -141,7 +142,7 @@ int main(int argc, char * argv[])
   // ros::init(argc, argv, "talker");
   rclcpp::init(argc, argv);
   
-  auto node = rclcpp::node::Node::make_shared("talker");
+  auto node = rclcpp::Node::make_shared("talker");
   // auto node = std::make_shared<rclcpp::node::Node>("talker"); // test
   // std::shared_ptr<rclcpp::node::Node> node(new rclcpp::node::Node("talker")); // test
   
@@ -161,7 +162,7 @@ int main(int argc, char * argv[])
   auto chatter_pub = node->create_publisher<std_msgs::msg::String>("chatter", custom_qos_profile);
   
   // ros::Rate loop_rate(10);
-  rclcpp::rate::WallRate loop_rate(PUBLISH_Hz);
+  rclcpp::WallRate loop_rate(PUBLISH_Hz);
   
   printf("start evaluation 256byte \n");
   // while (ros::ok())

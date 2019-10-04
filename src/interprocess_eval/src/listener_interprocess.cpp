@@ -1,7 +1,7 @@
 // #include "ros/ros.h"
-#include <rclcpp/rclcpp.hpp>
+#include "rclcpp/rclcpp.hpp"
 // #include "std_msgs/String.h"
-#include <std_msgs/msg/string.hpp>
+#include "std_msgs/msg/string.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,24 +16,24 @@
 #define QoS_Policy 3 // 1 means "reliable", 0 means "best effort", 3 means "history"
 
 static const rmw_qos_profile_t rmw_qos_profile_reliable = {
-  RMW_QOS_POLICY_KEEP_ALL_HISTORY,
+  RMW_QOS_POLICY_HISTORY_KEEP_ALL,
   100,
-  RMW_QOS_POLICY_RELIABLE,
-  RMW_QOS_POLICY_TRANSIENT_LOCAL_DURABILITY
+  RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+  RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
 };
 
 static const rmw_qos_profile_t rmw_qos_profile_best_effort = {
-  RMW_QOS_POLICY_KEEP_LAST_HISTORY,
+  RMW_QOS_POLICY_HISTORY_KEEP_LAST,
   1,
-  RMW_QOS_POLICY_BEST_EFFORT,
-  RMW_QOS_POLICY_VOLATILE_DURABILITY
+  RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+  RMW_QOS_POLICY_DURABILITY_VOLATILE
 };
 
 static const rmw_qos_profile_t rmw_qos_profile_history = {
-  RMW_QOS_POLICY_KEEP_LAST_HISTORY,
+  RMW_QOS_POLICY_HISTORY_KEEP_LAST,
   100,							// depth option for HISTORY
-  RMW_QOS_POLICY_RELIABLE,
-  RMW_QOS_POLICY_TRANSIENT_LOCAL_DURABILITY
+  RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+  RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
 };
 
 int i, count = -1, init_num_int;
