@@ -1,6 +1,4 @@
-// #include "ros/ros.h"
 #include "rclcpp/rclcpp.hpp"
-// #include "std_msgs/String.h"
 #include "std_msgs/msg/string.hpp"
 
 #include <stdio.h>
@@ -44,12 +42,11 @@ struct timespec tp1;		// for clock
 FILE *fp;			// for file io
 
 // eval_loop_count is updated when evaluation ends in each data size.
-// // 0 means evaluation of 256 bytes, 1 means evaluation of 512 bytes, ... 
+// 0 means evaluation of 256 bytes, 1 means evaluation of 512 bytes, ... 
 int eval_loop_count = 0;	
 
 std::string output_filename = "./evaluation/subscribe_time/subscribe_time_256byte.txt";
 
-//void chatterCallback(const std_msgs::String::ConstPtr& msg)
 void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
   
   if( count == -1 ){
@@ -93,19 +90,19 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 	}
 	subscribe_time[count] = (double)tp1.tv_sec + (double)tp1.tv_nsec/ (double)1000000000L;
 
-	// 評価終了後にまとめてsubscribe_time[]をsubscribe_tim_*bytee.txtに出力  
+	// Output subscribe_time[] collectively to subscribe_tim_*bytee.txt after evaluation 
 	if((fp = fopen(output_filename.c_str(), "w")) != NULL){
 	
-	  // init_numの書き込み
+	  // write init_num
 	  if(fprintf(fp, "%d\n",init_num_int ) < 0){
-		//書き込みエラー
+		// Write error
 		printf("error : can't output subscribe_time_*byte.txt'");
 	  }
 
-	  // subscribe_time[]の書き込み
+	  // write subscribe_time[]
 	  for(i=0; i<EVAL_NUM; i++){
 		if(fprintf(fp, "%18.9lf\n", subscribe_time[i]) < 0){
-		  //書き込みエラー
+		  // Write error
 		  printf("error : can't output subscribe_time_*byte.txt'");
 		  break;
 		}
@@ -119,7 +116,7 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 	  printf("error : can't output subscribe_time_*byte.txt'");
 	}
 	
-	// 評価の初期化
+	// Initialization of evaluation
 	count = -1;					// initilize for next date size
 	eval_loop_count++;				// update for next data size
 	
@@ -152,14 +149,13 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 	}else if( eval_loop_count == 14){
 	  output_filename = "./evaluation/subscribe_time/subscribe_time_4Mbyte.txt";
 	}else if( eval_loop_count == 15){
-	  // 計測終了
+	  // End of measurement
 	  count == EVAL_NUM;
 	}
 	
   }
 }
 
-// int main(int argc, char **argv)
 int main(int argc, char * argv[])
 {
   mlockall(MCL_FUTURE);		// lock all cached memory into RAM and prevent future dynamic memory allocations
@@ -171,10 +167,8 @@ int main(int argc, char * argv[])
   	exit(EXIT_FAILURE);
   }
 
-  //   ros::init(argc, argv, "listener");
   rclcpp::init(argc, argv);
 
-  //   ros::NodeHandle n;
   auto node = rclcpp::Node::make_shared("listener");
 
   // QoS settings
@@ -190,13 +184,9 @@ int main(int argc, char * argv[])
   }
   
   auto sub = node->create_subscription<std_msgs::msg::String>("chatter", chatterCallback, custom_qos_profile);
-  //   ros::Subscriber sub = n.subscribe("chatter", 1000, chatterCallback);
-  //  auto sub = node->create_subscription<std_msgs::msg::String>("chatter", chatterCallback, rmw_qos_profile_default);  
-
  
   printf("start evaluation\n");
 
-  //   ros::spin();
   rclcpp::spin(node);
 
   return 0;

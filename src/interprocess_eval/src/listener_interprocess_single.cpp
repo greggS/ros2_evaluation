@@ -1,6 +1,4 @@
-// #include "ros/ros.h"
 #include "rclcpp/rclcpp.hpp"
-// #include "std_msgs/String.h"
 #include "std_msgs/msg/string.hpp"
 
 #include <stdio.h>
@@ -53,7 +51,6 @@ struct timespec tp1;		// for clock
 
 FILE *fp;			// for file io
 
-//void chatterCallback(const std_msgs::String::ConstPtr& msg)
 void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
   
   if( count == -1 ){
@@ -94,19 +91,19 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 	}
 	subscribe_time[count] = (double)tp1.tv_sec + (double)tp1.tv_nsec/ (double)1000000000L;
 
-	// 評価終了後にまとめてsubscribe_time[]をsubscribe_tim_*bytee.txtに出力  
+	// Output subscribe_time [] collectively to subscribe_tim_ * bytee.txt after evaluation
 	if((fp = fopen(output_filename.c_str(), "w")) != NULL){
 	
-	  // init_numの書き込み
+	  // write init_num
 	  if(fprintf(fp, "%d\n",init_num_int ) < 0){
-		//書き込みエラー
+		// Write error
 		printf("error : can't output subscribe_time_*byte.txt'");
 	  }
 
-	  // subscribe_time[]の書き込み
+	  // write subscribe_time []
 	  for(i=0; i<EVAL_NUM; i++){
 		if(fprintf(fp, "%18.9lf\n", subscribe_time[i]) < 0){
-		  //書き込みエラー
+		  // Write error
 		  printf("error : can't output subscribe_time_*byte.txt'");
 		  break;
 		}
@@ -119,16 +116,15 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 	  printf("error : can't output subscribe_time_*byte.txt'");
 	}
 	
-	// 評価の初期化
-	count = -1;					// initilize for nexy date size
+	// Initialization of evaluation
+	count = -1;					// initilize for next date size
 	
-	// 評価の終了
+	// End of evaluation
 	count == EVAL_NUM;
 	
   }
 }
 
-// int main(int argc, char **argv)
 int main(int argc, char * argv[])
 {
   mlockall(MCL_FUTURE);
@@ -140,10 +136,8 @@ int main(int argc, char * argv[])
   	exit(EXIT_FAILURE);
   }
 
-  //   ros::init(argc, argv, "listener");
   rclcpp::init(argc, argv);
 
-  //   ros::NodeHandle n;
   auto node = rclcpp::Node::make_shared("listener");
 
   // QoS Setting
@@ -161,7 +155,6 @@ int main(int argc, char * argv[])
  
   printf("start evaluation\n");
 
-  //   ros::spin();
   rclcpp::spin(node);
 
   return 0;

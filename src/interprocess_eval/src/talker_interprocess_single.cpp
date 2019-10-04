@@ -1,6 +1,4 @@
-// #include "ros/ros.h"
 #include "rclcpp/rclcpp.hpp"
-// #include "std_msgs/String.h"
 #include "std_msgs/msg/string.hpp"
 
 #include <sstream>
@@ -41,11 +39,10 @@ std::string s, bytedata;
 
 FILE *fp;			// for file io
 
-// file名を引数に取りフアイルの中身を返す関数
+// A function that takes a file name as an argument and returns the contents of the file
 std::string read_datafile(std::string message_filename){
 
-  // data_*byte.txtからstd::string bytedataへデータを読み込み 
-  
+  // Read data from data_ * byte.txt to std :: string bytedata
   std::ifstream ifs(message_filename.c_str());
   if(ifs.fail()) {
 	std::cerr << "data_*byte.txt do not exist.\n";
@@ -58,19 +55,19 @@ std::string read_datafile(std::string message_filename){
   return bytedata;
 }
 
-// EVAL_NUM回、message_filename(data_*byte.txt)をpublishして時刻をoutput_filename(publish_time_*byte.txt)へ出力
+// EVAL_NUM times, publish message_filename (data_ * byte.txt) and output time to output_filename (publish_time_ * byte.txt)
 int eval_ros2(std::string message_filename, std::string output_filename, rclcpp::Publisher<std_msgs::msg::String>::SharedPtr chatter_pub){
   if( -1 < count ){
 
 	auto msg = std::make_shared<std_msgs::msg::String>();	
 	std::stringstream ss;
   
-	// messageの作成
+	// Create message
 	ss << count;
 	s = ss.str() + bytedata;
 	msg->data = s;
   
-	// 時刻の記録
+	// Time recording
 	if(clock_gettime(CLOCK_REALTIME,&tp1) < 0){
 	  perror("clock_gettime begin");
 	  return 0;
@@ -82,7 +79,6 @@ int eval_ros2(std::string message_filename, std::string output_filename, rclcpp:
 	// printf("I say: [%s]\n", msg->data.c_str());
 	// printf("Time Span:\t%ld.%09ld\n", tp1.tv_sec, tp1.tv_nsec);
 
-	// chatter_pub.publish(msg);
 	chatter_pub->publish(msg); // publish message
   
   }
@@ -92,14 +88,14 @@ int eval_ros2(std::string message_filename, std::string output_filename, rclcpp:
   
   }
   
-  // 評価終了後にまとめてpublish_time[]をpublish_time_*byte.txtに出力
+  // Output publish_time [] to publish_time_ * byte.txt after evaluation
   if( count == EVAL_NUM - 1){
 
 	if((fp = fopen(output_filename.c_str(), "w")) != NULL){
 	  for(i=0; i<EVAL_NUM; i++){
 
 		if(fprintf(fp, "%18.9lf\n", publish_time[i]) < 0){
-		  //書き込みエラー
+		  // Write error
 		  printf("error : can't output publish_time.txt");
 		  break;
 		}
@@ -119,7 +115,6 @@ int eval_ros2(std::string message_filename, std::string output_filename, rclcpp:
 
 }
 
-// int main(int argc, char **argv)
 int main(int argc, char * argv[])
 {
   mlockall(MCL_FUTURE);		// lock all cached memory into RAM and prevent future dynamic memory allocations
@@ -131,7 +126,6 @@ int main(int argc, char * argv[])
   	exit(EXIT_FAILURE);
   }
   
-  // ros::init(argc, argv, "talker");
   rclcpp::init(argc, argv);
   
   auto node = rclcpp::Node::make_shared("talker");
@@ -146,23 +140,20 @@ int main(int argc, char * argv[])
 	custom_qos_profile = rmw_qos_profile_best_effort;
   }
   
-  // ros::Publisher chatter_pub = n.advertise<std_msgs::String>("chatter", 1000);
   auto chatter_pub = node->create_publisher<std_msgs::msg::String>("chatter", custom_qos_profile);
   
-  // ros::Rate loop_rate(10);
   rclcpp::WallRate loop_rate(PUBLISH_Hz);
   
   printf("start evaluation 256byte \n");
-  // while (ros::ok())
+
   while (rclcpp::ok()) {
     eval_ros2("./evaluation/byte_data/data_256byte.txt", "./evaluation/publish_time/publish_time_256byte.txt", chatter_pub);
     if(count == -1){
       printf("end this data size evaluation\n");
       break;
     }
-    // ros::spinOnce();
+
     rclcpp::spin_some(node);
-    // loop_rate.sleep();
     loop_rate.sleep();
   }
   
