@@ -23,16 +23,16 @@ function(custom_executable target)
     DESTINATION bin)
 endfunction()
 
-#macro(targets)
-#  if(NOT "${target_suffix} " STREQUAL " ")
-#    get_rclcpp_information("${rmw_implementation}" "rclcpp${target_suffix}")
-#  endif()
-#
-#  # Examples of Publish/Subscribe with Topics
-#  custom_executable(talker_client_interprocess)
-#  custom_executable(listener_server_interprocess)
-#endmacro()
-#
-#call_for_each_rmw_implementation(targets GENERATE_DEFAULT)
+macro(targets)
+  if(NOT "${target_suffix} " STREQUAL " ")
+    #get_rclcpp_information("${rmw_implementation}" "rclcpp${target_suffix}")
+  endif()
+
+  # Examples of Publish/Subscribe with Topics
+  custom_executable(talker_client_interprocess)
+  custom_executable(listener_server_interprocess)
+endmacro()
+
+call_for_each_rmw_implementation(targets GENERATE_DEFAULT)
 
 ament_package()

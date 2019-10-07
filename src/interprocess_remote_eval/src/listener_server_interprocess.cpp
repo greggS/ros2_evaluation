@@ -1,46 +1,43 @@
-// #include "ros/ros.h"
 #include <rclcpp/rclcpp.hpp>
-// #include "std_msgs/String.h"
 #include <std_msgs/msg/string.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory>
-#include <time.h>				// clock
-#include <unistd.h>				// clock
+#include <time.h>			// clock
+#include <unistd.h>			// clock
 #include <sys/mman.h>			// mlock
-#include <sched.h>				// sched
+#include <sched.h>			// sched
 #include <arpa/inet.h>			// socket
 
 #define EVAL_NUM 120
 #define IS_RELIABLE_QOS 0			// 1 means "reliable"", 0 means "best effort""
 
 static const rmw_qos_profile_t rmw_qos_profile_reliable = {
-  RMW_QOS_POLICY_KEEP_ALL_HISTORY,
+  RMW_QOS_POLICY_HISTORY_KEEP_ALL,
   5,
-  RMW_QOS_POLICY_RELIABLE,
-  RMW_QOS_POLICY_TRANSIENT_LOCAL_DURABILITY
+  RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+  RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
 };
 
 static const rmw_qos_profile_t rmw_qos_profile_best_effort = {
-  RMW_QOS_POLICY_KEEP_LAST_HISTORY,
+  RMW_QOS_POLICY_HISTORY_KEEP_LAST,
   1,
-  RMW_QOS_POLICY_BEST_EFFORT,
-  RMW_QOS_POLICY_VOLATILE_DURABILITY
+  RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+  RMW_QOS_POLICY_DURABILITY_VOLATILE
 };
 
 int i, initializer=0;
 
 struct timespec tp1;			// for clock
 
-FILE *fp;						// for file io
+FILE *fp;				// for file io
 
 struct sockaddr_in addr;		// for socket
 struct sockaddr_in client;
 socklen_t client_size;
 int sock0, sock;
 
-//void chatterCallback(const std_msgs::String::ConstPtr& msg)
 void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 
   // printf("subscribe: [%s]\n", receiver.data.c_str());
@@ -57,7 +54,7 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
  	}
   }
   if ( initializer == 1 ){
- 	/* write(ソケット,"文字",文字数) */
+ 	// write (socket, "character", number of characters)
 	//	printf("write \n");
  	write(sock, "x", 1);
   }
@@ -65,7 +62,7 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 
 int set_bind_listen_accept_socket(){
 
-  /* ソケットの作成 */
+  // Create socket
   printf("set \n");
   sock0 = socket(AF_INET, SOCK_STREAM, 0);
   if( sock0<0 ){
@@ -73,12 +70,12 @@ int set_bind_listen_accept_socket(){
   	return 1;
   }
 
-  /* ソケットの設定 */
+  // Socket settings
   addr.sin_family = AF_INET;
   addr.sin_port = htons(12345);
   addr.sin_addr.s_addr = INADDR_ANY;
 
-  // portがTIME_WAIT状態でも接続する
+  // Connect even if port is in TIME_WAIT state
   const int one = 1;
   setsockopt(sock0, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
 
@@ -88,7 +85,7 @@ int set_bind_listen_accept_socket(){
   	return 1;
   }
 
-  /* TCPクライアントからの接続要求を待てる状態にする */
+  // Prepare to wait for a connection request from a TCP client
   printf("listen \n");
   if(   listen(sock0, 5)<0 ){
   	perror("listen");
@@ -99,7 +96,7 @@ int set_bind_listen_accept_socket(){
   printf("accept \n");
   printf("waiting for talker_client... \n");
 
-  //クライアントから通信があるまで待機
+  // Wait until there is communication from the client
   sock = accept(sock0, (struct sockaddr *)&client, &client_size);
   if( sock<0 ){
 	perror("accept");
@@ -125,10 +122,8 @@ int main(int argc, char * argv[])
   	exit(EXIT_FAILURE);
   }
 
-  //   ros::init(argc, argv, "listener");
   rclcpp::init(argc, argv);
 
-  //   ros::NodeHandle n;
   auto node = rclcpp::Node::make_shared("listener");
 
   // QoS settings
@@ -139,7 +134,6 @@ int main(int argc, char * argv[])
 	custom_qos_profile = rmw_qos_profile_best_effort;
   }
   
-  //   ros::Subscriber sub = n.subscribe("chatter", 1000, chatterCallback);
   auto sub = node->create_subscription<std_msgs::msg::String>("chatter", chatterCallback,  custom_qos_profile);
 
   // wait for establishing socket
