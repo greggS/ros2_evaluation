@@ -1,22 +1,4 @@
-
-
-
-
-// Copyright 2015 Open Source Robotics Foundation, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/string.hpp>
 
 #include <sstream>
@@ -27,28 +9,28 @@
 #include <cstdio>
 #include <string>
 
-#include <time.h>				// clock
-#include <unistd.h>				// clock
+#include <time.h>			// clock
+#include <unistd.h>			// clock
 
 #include <sys/mman.h>			// mlock
-#include <sched.h>				// sched
+#include <sched.h>			// sched
 
 #define EVAL_NUM 120
 #define PUBLISH_Hz_millisec 100
 #define IS_RELIABLE_QOS 0			// 1 means "reliable"", 0 means "best effort""
 
 static const rmw_qos_profile_t rmw_qos_profile_reliable = {
-  RMW_QOS_POLICY_KEEP_ALL_HISTORY,
+  RMW_QOS_POLICY_HISTORY_KEEP_ALL,
   5,
-  RMW_QOS_POLICY_RELIABLE,
-  RMW_QOS_POLICY_TRANSIENT_LOCAL_DURABILITY
+  RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+  RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
 };
 
 static const rmw_qos_profile_t rmw_qos_profile_best_effort = {
-  RMW_QOS_POLICY_KEEP_LAST_HISTORY,
+  RMW_QOS_POLICY_HISTORY_KEEP_LAST,
   1,
-  RMW_QOS_POLICY_BEST_EFFORT,
-  RMW_QOS_POLICY_VOLATILE_DURABILITY
+  RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+  RMW_QOS_POLICY_DURABILITY_VOLATILE
 };
 
 struct timespec tp1, tp2;
@@ -66,9 +48,8 @@ std_msgs::msg::String receiver;
 
 FILE *fp1, *fp2;
 
-// file名を引数に取りフアイルの中身を返す関数
+
 std::string read_datafile(std::string message_filename){
-  // data_*byte.txtからstd::string bytedataへデータを読み込み 
   
   std::ifstream ifs(message_filename.c_str());
   if(ifs.fail()) {
@@ -82,19 +63,17 @@ std::string read_datafile(std::string message_filename){
   return bytedata;
 }
 
-// EVAL_NUM回、message_filename(data_*byte.txt)をpublishして時刻をoutput_filename(publish_time_*byte.txt)へ出力
 int eval_ros2(std::string message_filename, std::string output_filename, rclcpp::Publisher<std_msgs::msg::String>::SharedPtr chatter_pub){
   if( -1 < count_talker ){
 
-	std_msgs::msg::String::UniquePtr msg_pub(new std_msgs::msg::String());
+	//std_msgs::msg::String::UniquePtr msg_pub(new std_msgs::msg::String());
+	auto msg_pub = std_msgs::msg::String();	
 	std::stringstream ss;
   
-	// messageの作成
 	ss << count_talker;
 	s = ss.str() + bytedata;
-	msg_pub->data = s;
+	msg_pub.data = s;
   
-	// 時刻の記録
 	if(clock_gettime(CLOCK_REALTIME,&tp1) < 0){
 	  perror("clock_gettime begin");
 	  return 0;
@@ -108,10 +87,7 @@ int eval_ros2(std::string message_filename, std::string output_filename, rclcpp:
 	// printf("I say: [%s]\n", msg->data.c_str());
 	// printf("Time Span:\t%ld.%09ld\n", tp1.tv_sec, tp1.tv_nsec);
 
-	// chatter_pub.publish(msg);
 	chatter_pub->publish(msg_pub);
-  
-	// 評価終了後にまとめてpublish_time[]をpublish_time_*byte.txtに出力
   }
   else if(count_talker == -1){
 	 
@@ -125,7 +101,6 @@ int eval_ros2(std::string message_filename, std::string output_filename, rclcpp:
 	  for(i=0; i<EVAL_NUM; i++){
 
 		if(fprintf(fp1, "%18.9lf\n", publish_time[i]) < 0){
-		  //書き込みエラー
 		  printf("error : can't output publish_time.txt \n");
 		}
 	  }
@@ -148,7 +123,7 @@ int eval_ros2(std::string message_filename, std::string output_filename, rclcpp:
 struct Producer : public rclcpp::Node
 {
   Producer(const std::string & name, const std::string & output)
-	: Node(name, true)
+	: Node(name)
   {
 
 	// QoS settings
@@ -315,7 +290,7 @@ struct Producer : public rclcpp::Node
 
 	};
 	
-	//    timer_ = this->create_wall_timer(1_s	, callback);
+	// timer_ = this->create_wall_timer(1_s	, callback);
     timer_ = this->create_wall_timer(std::chrono::milliseconds(PUBLISH_Hz_millisec)	, callback);
   }
 
@@ -327,7 +302,7 @@ struct Producer : public rclcpp::Node
 struct Consumer : public rclcpp::Node
 {
   Consumer(const std::string & name, const std::string & input)
-	: Node(name, true)
+	: Node(name)
   {
 
 	// QoS settings
@@ -384,19 +359,14 @@ struct Consumer : public rclcpp::Node
 		  }
 		  subscribe_time[count_listener] = (double)tp1.tv_sec + (double)tp1.tv_nsec/ (double)1000000000L;
 
-		  // 評価終了後にまとめてsubscribe_time[]をsubscribe_tim_*bytee.txtに出力  
 		  if((fp2 = fopen(output_filename.c_str(), "w")) != NULL){
 	
-			// init_numの書き込み
 			if(fprintf(fp2, "%d\n",init_num_int ) < 0){
-			  //書き込みエラー
 			  printf("error : can't output subscribe_time_*byte.txt \n");
 			}
 
-			// subscribe_time[]の書き込み
 			for(i=0; i<EVAL_NUM; i++){
 			  if(fprintf(fp2, "%18.9lf\n", subscribe_time[i]) < 0){
-				//書き込みエラー
 				printf("error : can't output subscribe_time_*byte.txt \n");
 				break;
 			  }
@@ -409,7 +379,6 @@ struct Consumer : public rclcpp::Node
 			printf("error : can't output subscribe_time_*byte.txt'");
 		  }
 	
-		  // 評価の初期化
 		  count_listener = -1;
 		  eval_loop_count++;
 	
@@ -442,7 +411,6 @@ struct Consumer : public rclcpp::Node
 		  }else if( eval_loop_count == 14){
 			output_filename = "./evaluation/subscribe_time/subscribe_time_4Mbyte.txt";
 		  }else if( eval_loop_count == 15){
-			// 計測終了
 			count_listener == EVAL_NUM;
 		  }
 	
