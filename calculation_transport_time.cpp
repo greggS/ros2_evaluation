@@ -3,7 +3,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>				// file io
-#include <time.h>				// clock
+#include <time.h>				  // clock
 #include <unistd.h>				// clock
 
 #define LIMIT_NUM 1000
@@ -18,7 +18,7 @@ int calculation(std::string pubtime_filename, std::string subtime_filename, std:
 
   FILE *fp;
 	
-  // publish_time.txtの読み込み
+  // Load publish_time.txt
 
   fp = fopen(pubtime_filename.c_str(), "r");
   if(fp == NULL) {
@@ -26,22 +26,22 @@ int calculation(std::string pubtime_filename, std::string subtime_filename, std:
 	return 0;
   }
  
-  /*  ファイルが終わりでない　「かつ」　配列を飛び出さないうちは，読み込みを続ける  */
+  /*While the file is not over and below the limit, continue reading. */
   while ( ! feof(fp) && n < LIMIT_NUM) {
 	fscanf(fp, "%lf", &(publish_time[n]));
 	n++;
   }
   fclose(fp);
-  n = n-1; /* 上のwhileループでは，EOFの行を余分に読み込んでいるので，実際のデータ数は一つ少ない． */
+  n = n-1; /* Exclude the extra line that has been read (EOF) */
  
-  /*  画面に表示  */
+  /*  Display the publish timestamps  */
   for(i=0; i<n; i++) {
 	// printf("%lf\n", publish_time[i]);
   }
   printf("------------------\n");
 
 	
-  // subscribe_time.txtの読み込み
+  // Load subscribe_time.txt
 
   fp = fopen(subtime_filename.c_str(), "r");
   if(fp == NULL) {
@@ -57,19 +57,19 @@ int calculation(std::string pubtime_filename, std::string subtime_filename, std:
 	n++;
   }
   n = n-1;
-  /*  画面に表示  */
+  /*  Display the subscribe timestamps  */
   for(i=0; i<n; i++) {
 	// printf("%lf\n", subscribe_time[i]);
   }
 
 
-  // 通信時間を計算し、transport_time.txtへ出力
+  // Calculate the communication time and output to transport_time.txt
 
   if((fp = fopen(transtime_filename.c_str(), "w")) != NULL){
 	for(i=init_num_int; i<n; i++){
 	  transport_time[i] = subscribe_time[i] - publish_time[i];
 	  if(fprintf(fp, "%1.9lf\n", transport_time[i]) < 0){
-		//書き込みエラー
+		//Error
 		break;
 	  }
 	}
@@ -109,9 +109,9 @@ int main()
 
   calculation("./evaluation/publish_time/publish_time_1Mbyte.txt", "./evaluation/subscribe_time/subscribe_time_1Mbyte.txt", "./evaluation/transport_time/transport_time_1Mbyte.txt");
   
-   calculation("./evaluation/publish_time/publish_time_2Mbyte.txt", "./evaluation/subscribe_time/subscribe_time_2Mbyte.txt", "./evaluation/transport_time/transport_time_2Mbyte.txt");
+  calculation("./evaluation/publish_time/publish_time_2Mbyte.txt", "./evaluation/subscribe_time/subscribe_time_2Mbyte.txt", "./evaluation/transport_time/transport_time_2Mbyte.txt");
 
- calculation("./evaluation/publish_time/publish_time_4Mbyte.txt", "./evaluation/subscribe_time/subscribe_time_4Mbyte.txt", "./evaluation/transport_time/transport_time_4Mbyte.txt");
+  calculation("./evaluation/publish_time/publish_time_4Mbyte.txt", "./evaluation/subscribe_time/subscribe_time_4Mbyte.txt", "./evaluation/transport_time/transport_time_4Mbyte.txt");
   
   return 0;
 }
