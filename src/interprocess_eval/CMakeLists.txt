@@ -21,7 +21,7 @@ function(custom_executable target)
     "rt")
 
   install(TARGETS ${target}${target_suffix}
-    DESTINATION bin)
+    DESTINATION lib/${PROJECT_NAME})
 
 endfunction()
 

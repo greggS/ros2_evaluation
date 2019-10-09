@@ -20,7 +20,7 @@ function(custom_executable target)
     "std_msgs"
 	"rt")
   install(TARGETS ${target}${target_suffix}
-    DESTINATION bin)
+    DESTINATION lib/${PROJECT_NAME})
 endfunction()
 
 macro(targets)
