@@ -17,9 +17,13 @@ find_package(std_msgs REQUIRED)
 add_executable(CPU_load CPU_load.cpp)
 ament_target_dependencies(CPU_load rclcpp std_msgs)
 
+add_executable(MEM_load MEM_load.cpp)
+ament_target_dependencies(MEM_load rclcpp std_msgs)
+
 
 install(TARGETS
   CPU_load
+  MEM_load
   DESTINATION lib/${PROJECT_NAME}
 )
 
