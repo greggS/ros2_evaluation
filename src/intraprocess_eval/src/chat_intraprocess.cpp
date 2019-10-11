@@ -286,6 +286,7 @@ struct Producer : public rclcpp::Node
 	  if (eval_loop_count == 15){
 		eval_loop_count++;
 		printf("---end evaluation---\n");
+		rclcpp::shutdown();
 	  }
 
 	};
