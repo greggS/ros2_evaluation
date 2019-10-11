@@ -17,6 +17,10 @@
 #define PUBLISH_Hz 10
 #define IS_RELIABLE_QOS 0			// 1 means "reliable"", 0 means "best effort""
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 static const rmw_qos_profile_t rmw_qos_profile_reliable = {
   RMW_QOS_POLICY_HISTORY_KEEP_ALL,
   5,
@@ -424,6 +428,8 @@ int main(int argc, char * argv[])
     loop_rate.sleep();
   }
 
+  #pragma GCC diagnostic pop
+  
   // socket termination
   close(sock);
 

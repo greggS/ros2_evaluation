@@ -14,6 +14,10 @@
 #define EVAL_NUM 1200
 #define IS_RELIABLE_QOS 1 // 1 means "reliable"", 0 means "best effort""
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 std::string output_filename = "./evaluation/subscribe_time/subscribe_time_256byte.txt";
 // std::string output_filename = "./evaluation/subscribe_time/subscribe_time_512byte.txt";
 // std::string output_filename = "./\evaluation/subscribe_time/subscribe_time_1Kbyte.txt";
@@ -120,7 +124,7 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 	count = -1;					// initilize for next date size
 	
 	// End of evaluation
-	count == EVAL_NUM;
+	count = EVAL_NUM;
 	
   }
 }
@@ -154,6 +158,8 @@ int main(int argc, char * argv[])
 
  
   printf("start evaluation\n");
+
+  #pragma GCC diagnostic pop
 
   rclcpp::spin(node);
 

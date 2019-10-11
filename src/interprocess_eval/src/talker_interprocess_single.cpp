@@ -17,6 +17,10 @@
 #define PUBLISH_Hz 10
 #define IS_RELIABLE_QOS 1			// 1 means "reliable"", 0 means "best effort""
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 static const rmw_qos_profile_t rmw_qos_profile_reliable = {
   RMW_QOS_POLICY_HISTORY_KEEP_ALL,
   5,
@@ -145,6 +149,8 @@ int main(int argc, char * argv[])
   rclcpp::WallRate loop_rate(PUBLISH_Hz);
   
   printf("start evaluation 256byte \n");
+
+  #pragma GCC diagnostic pop
 
   while (rclcpp::ok()) {
     eval_ros2("./evaluation/byte_data/data_256byte.txt", "./evaluation/publish_time/publish_time_256byte.txt", chatter_pub);

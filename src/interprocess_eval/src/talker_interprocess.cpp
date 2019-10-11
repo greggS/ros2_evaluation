@@ -18,6 +18,10 @@
 #define PUBLISH_Hz 10
 #define QoS_Policy 3	// 1 means "reliable", 0 means "best effort", 3 means "history"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 static const rmw_qos_profile_t rmw_qos_profile_reliable = {
   RMW_QOS_POLICY_HISTORY_KEEP_ALL,
   100,
@@ -89,7 +93,6 @@ int eval_ros2(std::string message_filename, std::string output_filename, rclcpp:
 
 	// chatter_pub.publish(msg);
 	chatter_pub->publish(msg); // publish message
-  
   }
   else if(count == -1){
 	 
@@ -348,7 +351,7 @@ int main(int argc, char * argv[])
     rclcpp::spin_some(node);
     loop_rate.sleep();
   }
-
+  
   // followthrough transactions
   count = 0;
   while (rclcpp::ok()) {
@@ -365,6 +368,8 @@ int main(int argc, char * argv[])
     loop_rate.sleep();
   }
 
+  #pragma GCC diagnostic pop
+ 
   return 0;
 }
 

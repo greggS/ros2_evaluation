@@ -19,6 +19,10 @@
 #define PUBLISH_Hz_millisec 100
 #define IS_RELIABLE_QOS 0			// 1 means "reliable"", 0 means "best effort""
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 static const rmw_qos_profile_t rmw_qos_profile_reliable = {
   RMW_QOS_POLICY_HISTORY_KEEP_ALL,
   5,
@@ -329,7 +333,7 @@ struct Consumer : public rclcpp::Node
 		  printf("eval_loop %d \n", eval_loop_count);
    
 		}
-   
+   usleep(100);
 		// evaluation
 		if( count_listener < EVAL_NUM-1 ){
 	
@@ -411,7 +415,7 @@ struct Consumer : public rclcpp::Node
 		  }else if( eval_loop_count == 14){
 			output_filename = "./evaluation/subscribe_time/subscribe_time_4Mbyte.txt";
 		  }else if( eval_loop_count == 15){
-			count_listener == EVAL_NUM;
+			count_listener = EVAL_NUM;
 		  }
 	
 		}
@@ -441,6 +445,8 @@ int main(int argc, char * argv[])
 
   auto producer = std::make_shared<Producer>("consumer", "number");
   auto consumer = std::make_shared<Consumer>("producer", "number");
+
+  #pragma GCC diagnostic pop
 
   executor.add_node(producer);
   executor.add_node(consumer);
