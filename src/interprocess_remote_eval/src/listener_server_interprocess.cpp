@@ -1,5 +1,5 @@
-#include <rclcpp/rclcpp.hpp>
-#include <std_msgs/msg/string.hpp>
+#include "rclcpp/rclcpp.hpp"
+#include "std_msgs/msg/string.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +12,11 @@
 
 #define EVAL_NUM 120
 #define IS_RELIABLE_QOS 0			// 1 means "reliable"", 0 means "best effort""
+
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 static const rmw_qos_profile_t rmw_qos_profile_reliable = {
   RMW_QOS_POLICY_HISTORY_KEEP_ALL,
@@ -41,7 +46,7 @@ int sock0, sock;
 void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 
   // printf("subscribe: [%s]\n", receiver.data.c_str());
-  //  printf("subscribe \n");
+  // printf("subscribe \n");
 
   if( initializer == 0 ) {
  	// Initialize
@@ -135,6 +140,8 @@ int main(int argc, char * argv[])
   }
   
   auto sub = node->create_subscription<std_msgs::msg::String>("chatter", chatterCallback,  custom_qos_profile);
+
+  #pragma GCC diagnostic pop
 
   // wait for establishing socket
   if ( set_bind_listen_accept_socket() == 1 ){

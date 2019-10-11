@@ -9,9 +9,14 @@
 #include <time.h>		// clock
 #include <sys/mman.h>		// mlock
 #include <sched.h>		// sched
+#include <string>
 
 #define EVAL_NUM 120
 #define QoS_Policy 3 // 1 means "reliable", 0 means "best effort", 3 means "history"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 static const rmw_qos_profile_t rmw_qos_profile_reliable = {
   RMW_QOS_POLICY_HISTORY_KEEP_ALL,
@@ -48,6 +53,12 @@ int eval_loop_count = 0;
 std::string output_filename = "./evaluation/subscribe_time/subscribe_time_256byte.txt";
 
 void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
+
+  std::string termination = msg->data.c_str();
+  if(termination.find("end") != std::string::npos){
+	  printf("---end evaluation---\n");
+	  rclcpp::shutdown();
+  }
   
   if( count == -1 ){
 
@@ -150,7 +161,7 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 	  output_filename = "./evaluation/subscribe_time/subscribe_time_4Mbyte.txt";
 	}else if( eval_loop_count == 15){
 	  // End of measurement
-	  count == EVAL_NUM;
+	  count = EVAL_NUM;
 	}
 	
   }
@@ -186,6 +197,8 @@ int main(int argc, char * argv[])
   auto sub = node->create_subscription<std_msgs::msg::String>("chatter", chatterCallback, custom_qos_profile);
  
   printf("start evaluation\n");
+
+  #pragma GCC diagnostic pop
 
   rclcpp::spin(node);
 
