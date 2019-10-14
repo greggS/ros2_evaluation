@@ -12,7 +12,7 @@
 #include <string>
 
 #define EVAL_NUM 120
-#define QoS_Policy 3 // 1 means "reliable", 0 means "best effort", 3 means "history"
+//#define QoS_Policy 3 // 1 means "reliable", 0 means "best effort", 3 means "history"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -181,6 +181,10 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
 
   auto node = rclcpp::Node::make_shared("listener");
+
+  node->declare_parameter("QoS_Policy");
+  int QoS_Policy;
+  node->get_parameter_or("QoS_Policy", QoS_Policy, 1);
 
   // QoS settings
   rmw_qos_profile_t custom_qos_profile;
