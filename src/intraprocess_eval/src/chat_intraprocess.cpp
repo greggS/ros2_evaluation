@@ -37,6 +37,13 @@ static const rmw_qos_profile_t rmw_qos_profile_best_effort = {
   RMW_QOS_POLICY_DURABILITY_VOLATILE
 };
 
+static const rmw_qos_profile_t rmw_qos_profile_history = {
+  RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+  100,							// depth option for HISTORY
+  RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+  RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
+};
+
 struct timespec tp1, tp2;
 int i;
 int count_talker =-1, count_listener = -1, count_end = 0, init_num_int;
@@ -130,14 +137,19 @@ struct Producer : public rclcpp::Node
 	: Node(name)
   {
 
+	this->declare_parameter("QoS_Policy");
+  	int QoS_Policy;
+  	this->get_parameter_or("QoS_Policy", QoS_Policy, 1);
+
 	// QoS settings
 	rmw_qos_profile_t custom_qos_profile;
-	if( IS_RELIABLE_QOS == 1){
+	if (QoS_Policy == 1){
 	  custom_qos_profile = rmw_qos_profile_reliable;
-	}else{
+	}else if (QoS_Policy == 2){
 	  custom_qos_profile = rmw_qos_profile_best_effort;
+	} else if (QoS_Policy == 3){
+	  custom_qos_profile = rmw_qos_profile_history;
 	}
-
     // Create a publisher on the output topic.
     pub_ = this->create_publisher<std_msgs::msg::String>(output, custom_qos_profile);
 
@@ -290,6 +302,7 @@ struct Producer : public rclcpp::Node
 	  if (eval_loop_count == 15){
 		eval_loop_count++;
 		printf("---end evaluation---\n");
+		rclcpp::shutdown();
 	  }
 
 	};
@@ -309,12 +322,18 @@ struct Consumer : public rclcpp::Node
 	: Node(name)
   {
 
+  	this->declare_parameter("QoS_Policy");
+  	int QoS_Policy;
+  	this->get_parameter_or("QoS_Policy", QoS_Policy, 1);
+
 	// QoS settings
 	rmw_qos_profile_t custom_qos_profile;
-	if( IS_RELIABLE_QOS == 1){
+	if (QoS_Policy == 1){
 	  custom_qos_profile = rmw_qos_profile_reliable;
-	}else{
+	}else if (QoS_Policy == 2){
 	  custom_qos_profile = rmw_qos_profile_best_effort;
+	} else if (QoS_Policy == 3){
+	  custom_qos_profile = rmw_qos_profile_history;
 	}
 
     // Create a subscription on the input topic which prints on receipt of new messages.
@@ -443,8 +462,8 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
   rclcpp::executors::SingleThreadedExecutor executor;
 
-  auto producer = std::make_shared<Producer>("consumer", "number");
-  auto consumer = std::make_shared<Consumer>("producer", "number");
+  auto producer = std::make_shared<Producer>("listener", "number");
+  auto consumer = std::make_shared<Consumer>("talker", "number");
 
   #pragma GCC diagnostic pop
 
