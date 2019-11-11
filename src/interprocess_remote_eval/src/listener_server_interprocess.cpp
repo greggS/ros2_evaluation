@@ -45,6 +45,12 @@ int sock0, sock;
 
 void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 
+  std::string termination = msg->data.c_str();
+  if(termination.find("end") != std::string::npos){
+	  printf("---end evaluation---\n");
+	  rclcpp::shutdown();
+  }
+
   // printf("subscribe: [%s]\n", receiver.data.c_str());
   // printf("subscribe \n");
 

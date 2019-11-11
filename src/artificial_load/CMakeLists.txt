@@ -17,7 +17,6 @@ find_package(std_msgs REQUIRED)
 add_executable(CPU_load CPU_load.cpp)
 ament_target_dependencies(CPU_load rclcpp std_msgs)
 
-
 install(TARGETS
   CPU_load
   DESTINATION lib/${PROJECT_NAME}

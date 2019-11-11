@@ -12,7 +12,7 @@
 #include <string>
 
 #define EVAL_NUM 120
-//#define QoS_Policy 3 // 1 means "reliable", 0 means "best effort", 3 means "history"
+#define QoS_Policy 3 // 1 means "reliable", 0 means "best effort", 3 means "history"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -172,29 +172,34 @@ int main(int argc, char * argv[])
   mlockall(MCL_FUTURE);		// lock all cached memory into RAM and prevent future dynamic memory allocations
   
   usleep(1000);
+
+  //Comment this part in order to disable real-time priority
+
   sched_param  pri = {94}; 
   if (sched_setscheduler(0, SCHED_FIFO, &pri) == -1) { // set FIFO scheduler
   	perror("sched_setattr");
-  	exit(EXIT_FAILURE);
-  }
+   	exit(EXIT_FAILURE);
+   }
 
+  //Up to here
+  
   rclcpp::init(argc, argv);
 
   auto node = rclcpp::Node::make_shared("listener");
 
   node->declare_parameter("QoS_Policy");
-  int QoS_Policy;
-  node->get_parameter_or("QoS_Policy", QoS_Policy, 1);
+  int QoS_Policy_param;
+  node->get_parameter_or("QoS_Policy", QoS_Policy_param, QoS_Policy);
 
   // QoS settings
   rmw_qos_profile_t custom_qos_profile;
-  if( QoS_Policy == 1){
+  if( QoS_Policy_param == 1){
 	custom_qos_profile = rmw_qos_profile_reliable;
   }
-  else if( QoS_Policy == 2 ){
+  else if( QoS_Policy_param == 2 ){
 	custom_qos_profile = rmw_qos_profile_best_effort;
   }
-  else if( QoS_Policy == 3){
+  else if( QoS_Policy_param == 3){
 	custom_qos_profile = rmw_qos_profile_history;
   }
   
