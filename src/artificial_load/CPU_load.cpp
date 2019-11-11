@@ -17,7 +17,7 @@ void thread_load_function()
     unsigned long start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     float number = 1.5;
 
-    while((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - start) < 60000)
+    while((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - start) < 6*60000)
       number*=number;  
       
     return;
@@ -25,12 +25,6 @@ void thread_load_function()
 
 int main(int argc, char * argv[])
 {
-
-  // sched_param  pri = {93}; 
-  // if (sched_setscheduler(0, SCHED_FIFO, &pri) == -1) { // set FIFO scheduler
-  // 	perror("sched_setattr");
-  // 	exit(EXIT_FAILURE);
-  // }
 
   rclcpp::init(argc, argv);
 
@@ -44,12 +38,6 @@ int main(int argc, char * argv[])
         threads.push_back(std::thread(thread_load_function));
     }
   std::for_each(threads.begin(), threads.end(), std::mem_fn(&std::thread::join));
-
-  // while(rclcpp::ok()){
-
-  //   rclcpp::spin_some(node);
-  //   loop_rate.sleep();
-  // }
 
   rclcpp::shutdown();
   return 0;

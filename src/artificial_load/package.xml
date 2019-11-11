@@ -3,7 +3,7 @@
 <package format="2">
   <name>artificial_load</name>
   <version>0.0.1</version>
-  <description>Creates a heavy memory or cpu load for the system</description>
+  <description>Creates a heavy cpu load for the system</description>
   <license>Apache License 2.0</license>
   <maintainer email="jacob@openrobotics.org">Jacob Perron</maintainer>
 
