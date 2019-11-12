@@ -4,15 +4,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory>
-#include <iostream>		// file io
-#include <unistd.h>		// clock
-#include <time.h>		// clock
-#include <sys/mman.h>		// mlock
-#include <sched.h>		// sched
+#include <iostream>		
+#include <unistd.h>		
+#include <time.h>		
+#include <sys/mman.h>	
+#include <sched.h>		
 #include <string>
 
 #define EVAL_NUM 120
-#define QoS_Policy 3 // 1 means "reliable", 0 means "best effort", 3 means "history"
+#define QoS_Policy 3 // 1 means "reliable", 2 means "best effort", 3 means "history"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -43,8 +43,7 @@ int i, count = -1, init_num_int;
 double  subscribe_time[EVAL_NUM];
 
 struct timespec tp1;		// for clock
-
-FILE *fp;			// for file io
+FILE *fp;					// for file io
 
 // eval_loop_count is updated when evaluation ends in each data size.
 // 0 means evaluation of 256 bytes, 1 means evaluation of 512 bytes, ... 
@@ -55,12 +54,12 @@ std::string output_filename = "./evaluation/subscribe_time/subscribe_time_256byt
 void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 
   std::string termination = msg->data.c_str();
-  if(termination.find("end") != std::string::npos){
-	  printf("---end evaluation---\n");
-	  rclcpp::shutdown();
+  if (termination.find("end") != std::string::npos) {
+  	printf("---end evaluation---\n");
+	rclcpp::shutdown();
   }
   
-  if( count == -1 ){
+  if (count == -1) {
 
 	// Initialize count
 	char init_num_char = *( msg->data.c_str());
@@ -71,13 +70,11 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 	// printf("first recieved number: %d \n\n", count);
 	printf("message loss : %d \n", init_num_int);
 	printf("eval_loop %d \n", eval_loop_count);
-   
   }
    
   // evaluation
-  if( count < EVAL_NUM-1 ){
-	
-	if(clock_gettime(CLOCK_REALTIME,&tp1) < 0){
+  if (count < EVAL_NUM - 1) {
+	if (clock_gettime(CLOCK_REALTIME,&tp1) < 0) {
 	  perror("clock_gettime begin");
 	}
 	subscribe_time[count] = (double)tp1.tv_sec + (double)tp1.tv_nsec/ (double)1000000000L;
@@ -93,26 +90,26 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 	// printf("I heard: [%c%c]\n",* ( msg->data.c_str()), *p);
 
 	count++;
+  } 
+  else if (count == EVAL_NUM - 1) { 
 
-  }else if( count == EVAL_NUM - 1 ){ 
-
-	if(clock_gettime(CLOCK_REALTIME,&tp1) < 0){
+	if (clock_gettime(CLOCK_REALTIME,&tp1) < 0) {
 	  perror("clock_gettime begin");
 	}
 	subscribe_time[count] = (double)tp1.tv_sec + (double)tp1.tv_nsec/ (double)1000000000L;
 
 	// Output subscribe_time[] collectively to subscribe_tim_*bytee.txt after evaluation 
-	if((fp = fopen(output_filename.c_str(), "w")) != NULL){
+	if ((fp = fopen(output_filename.c_str(), "w")) != NULL) {
 	
 	  // write init_num
-	  if(fprintf(fp, "%d\n",init_num_int ) < 0){
+	  if (fprintf(fp, "%d\n",init_num_int ) < 0) {
 		// Write error
 		printf("error : can't output subscribe_time_*byte.txt'");
 	  }
 
 	  // write subscribe_time[]
-	  for(i=0; i<EVAL_NUM; i++){
-		if(fprintf(fp, "%18.9lf\n", subscribe_time[i]) < 0){
+	  for (i = 0; i < EVAL_NUM; i++) {
+		if (fprintf(fp, "%18.9lf\n", subscribe_time[i]) < 0) {
 		  // Write error
 		  printf("error : can't output subscribe_time_*byte.txt'");
 		  break;
@@ -122,8 +119,8 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 	  // printf("output data %d \n", eval_loop_count);
 
 	  fclose(fp);
-
-	}else{
+	} 
+	else {
 	  printf("error : can't output subscribe_time_*byte.txt'");
 	}
 	
@@ -173,20 +170,18 @@ int main(int argc, char * argv[])
   
   usleep(1000);
 
-  //Comment this part in order to disable real-time priority
-
+ //Comment this part in order to disable real-time priority
   sched_param  pri = {94}; 
   if (sched_setscheduler(0, SCHED_FIFO, &pri) == -1) { // set FIFO scheduler
   	perror("sched_setattr");
    	exit(EXIT_FAILURE);
    }
-
-  //Up to here
+ //Up to here
   
   rclcpp::init(argc, argv);
-
   auto node = rclcpp::Node::make_shared("listener");
 
+  // geting parameters from yaml file
   node->declare_parameter("QoS_Policy");
   int QoS_Policy_param;
   node->get_parameter_or("QoS_Policy", QoS_Policy_param, QoS_Policy);

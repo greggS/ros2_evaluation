@@ -17,7 +17,7 @@
 
 #define EVAL_NUM 120	// evaluation number for each data size
 #define PUBLISH_Hz 10
-#define QoS_Policy 3	// 1 means "reliable", 0 means "best effort", 3 means "history"
+#define QoS_Policy 3	// 1 means "reliable", 2 means "best effort", 3 means "history"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -49,17 +49,16 @@ int i, count = -1;	// count is current evaluation number (< EVAL_NUM)
 double publish_time[EVAL_NUM];
 
 std::string s, bytedata;
-
-FILE *fp;						// for file io
+FILE *fp;				
 
 // A function that takes a file name as an argument and returns the contents of the file
-std::string read_datafile(std::string message_filename){
+std::string read_datafile(std::string message_filename) {
 
   // Read data from data_ * byte.txt to std :: string bytedata
   std::ifstream ifs(message_filename.c_str());
-  if(ifs.fail()) {
-	std::cerr << "data_*byte.txt do not exist.\n";
-	exit(0);
+  if (ifs.fail()) {
+	 std::cerr << "data_*byte.txt do not exist.\n";
+	 exit(0);
   }
  
   std::string bytedata;
@@ -70,7 +69,7 @@ std::string read_datafile(std::string message_filename){
 
 // EVAL_NUM times, publish message_filename (data_ * byte.txt) and output time to output_filename (publish_time_ * byte.txt)
 int eval_ros2(std::string message_filename, std::string output_filename, rclcpp::Publisher<std_msgs::msg::String>::SharedPtr chatter_pub){
-  if( -1 < count ){
+if (-1 < count) {
 
 	auto msg = std::make_shared<std_msgs::msg::String>();
 	std::stringstream ss;
@@ -81,11 +80,11 @@ int eval_ros2(std::string message_filename, std::string output_filename, rclcpp:
 	msg->data = s;
   
 	// Time recording
-	if(clock_gettime(CLOCK_REALTIME,&tp1) < 0){
+	if (clock_gettime(CLOCK_REALTIME,&tp1) < 0) {
 	  perror("clock_gettime begin");
 	  return 0;
-	}
-	publish_time[count] = (double)tp1.tv_sec + (double)tp1.tv_nsec/ (double)1000000000L;
+  }
+  publish_time[count] = (double)tp1.tv_sec + (double)tp1.tv_nsec/ (double)1000000000L;
 
 	// printf("%18.9lf\n",publish_time[count]);
 	// printf("publish_time[%2d]:\t%18.9lf\n", count, publish_time[count]);
@@ -94,39 +93,31 @@ int eval_ros2(std::string message_filename, std::string output_filename, rclcpp:
 
 	// chatter_pub.publish(msg);
 	chatter_pub->publish(msg); // publish message
-  }
-  else if(count == -1){
-
-	 
+}
+else if (count == -1) { 
 	bytedata = read_datafile(message_filename.c_str());
+}
   
-  }
-  
-  // Output publish_time [] to publish_time_ * byte.txt after evaluation
-  if( count == EVAL_NUM - 1){
+// Output publish_time [] to publish_time_ * byte.txt after evaluation
+if (count == EVAL_NUM - 1) {
+  if ((fp = fopen(output_filename.c_str(), "w")) != NULL) {
+	  for (i=0; i < EVAL_NUM; i++) {
 
-	if((fp = fopen(output_filename.c_str(), "w")) != NULL){
-	  for(i=0; i<EVAL_NUM; i++){
-
-		if(fprintf(fp, "%18.9lf\n", publish_time[i]) < 0){
-		  // Write error
-		  printf("error : can't output publish_time.txt");
-		  break;
-		}
+		  if (fprintf(fp, "%18.9lf\n", publish_time[i]) < 0) {
+		    // Write error
+		    printf("error : can't output publish_time.txt");
+		    break;
+		  }
 	  }
 	  fclose(fp);
-	}else{
+	} else {
 	  printf("error : can't output publish_time.txt");	
 	}
-	
 	count = -2; // initilize for next date size
-	
-  }
+}
   
-  count++;
-  
-  return 0;
-
+count++;
+return 0;
 }
 
 
@@ -137,19 +128,17 @@ int main(int argc, char * argv[])
   usleep(1000);
   
   //Comment this part in order to disable real-time priority
-
   sched_param  pri = {94}; 
   if (sched_setscheduler(0, SCHED_FIFO, &pri) == -1) { // set FIFO scheduler
    	perror("sched_setattr");
    	exit(EXIT_FAILURE);
-   }
-
-   //Up to here
+  }
+  //Up to here
   
   rclcpp::init(argc, argv);
-  
   auto node = rclcpp::Node::make_shared("talker");
   
+  // geting parameters from yaml file
   node->declare_parameter("QoS_Policy");
   int QoS_Policy_param;
   node->get_parameter_or("QoS_Policy", QoS_Policy_param, QoS_Policy);
