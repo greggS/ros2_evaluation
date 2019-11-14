@@ -53,6 +53,11 @@ std::string output_filename = "./evaluation/subscribe_time/subscribe_time_256byt
 
 void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 
+  if (clock_gettime(CLOCK_REALTIME,&tp1) < 0) {
+	 perror("clock_gettime begin");
+  }
+  double receive_time = (double)tp1.tv_sec + (double)tp1.tv_nsec/ (double)1000000000L;
+
   std::string termination = msg->data.c_str();
   if (termination.find("end") != std::string::npos) {
   	printf("---end evaluation---\n");
@@ -74,10 +79,7 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
    
   // evaluation
   if (count < EVAL_NUM - 1) {
-	if (clock_gettime(CLOCK_REALTIME,&tp1) < 0) {
-	  perror("clock_gettime begin");
-	}
-	subscribe_time[count] = (double)tp1.tv_sec + (double)tp1.tv_nsec/ (double)1000000000L;
+	subscribe_time[count] = receive_time;
 
 	// printf("%18.9lf\n",subscribe_time[count]);
 	// printf("I heard: [%c]\n",* ( msg->data.c_str()) );
@@ -92,11 +94,7 @@ void chatterCallback(const std_msgs::msg::String::SharedPtr msg){
 	count++;
   } 
   else if (count == EVAL_NUM - 1) { 
-
-	if (clock_gettime(CLOCK_REALTIME,&tp1) < 0) {
-	  perror("clock_gettime begin");
-	}
-	subscribe_time[count] = (double)tp1.tv_sec + (double)tp1.tv_nsec/ (double)1000000000L;
+	subscribe_time[count] = receive_time;
 
 	// Output subscribe_time[] collectively to subscribe_tim_*bytee.txt after evaluation 
 	if ((fp = fopen(output_filename.c_str(), "w")) != NULL) {
