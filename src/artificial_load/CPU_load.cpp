@@ -14,11 +14,12 @@ using namespace std::chrono_literals;
 
 void thread_load_function()
 { 
-    unsigned long start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     float number = 1.5;
 
-    while((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - start) < 6*60000)
+    while(1)
+    {
       number*=number;  
+    }
       
     return;
 }

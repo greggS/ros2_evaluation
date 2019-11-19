@@ -18,6 +18,7 @@
 #define EVAL_NUM 120	// evaluation number for each data size
 #define PUBLISH_Hz 10
 #define QoS_Policy 3	// 1 means "reliable", 2 means "best effort", 3 means "history"
+#define RUN_REAL_TIME
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -127,13 +128,13 @@ int main(int argc, char * argv[])
   
   usleep(1000);
   
-  //Comment this part in order to disable real-time priority
+#ifdef RUN_REAL_TIME
   sched_param  pri = {94}; 
   if (sched_setscheduler(0, SCHED_FIFO, &pri) == -1) { // set FIFO scheduler
    	perror("sched_setattr");
    	exit(EXIT_FAILURE);
   }
-  //Up to here
+#endif
   
   rclcpp::init(argc, argv);
   auto node = rclcpp::Node::make_shared("talker");
